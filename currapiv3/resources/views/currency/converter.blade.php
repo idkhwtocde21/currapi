@@ -10,7 +10,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h2 class="text-2xl md:text-4xl font-bold text-white mb-2">Currency Converter</h2>
-                    <p class="text-sm md:text-base text-violet-50">Convert between currencies with live rates and a clean, responsive UI.</p>
+                    <p class="text-sm md:text-base text-violet-50"></p>
                 </div>
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-300/60">
                     <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>

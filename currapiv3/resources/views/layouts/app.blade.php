@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Currency Analytics')</title>
+    <link rel="icon" type="image/jpeg" href="/logos/newcurrapilogo_nobg.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -134,7 +135,7 @@
         <!-- Footer -->
         <footer class="text-center text-violet-900 py-4 md:py-6 border-t border-violet-200 bg-white backdrop-blur-md shadow-md animate-fadeIn">
             <p class="text-xs md:text-sm font-medium">© 2026 Currency Exchange Rate Analytics System.</p>
-            <p class="text-xs text-violet-600 mt-1 font-medium">Made by Group 1</p>
+            <p class="text-xs text-violet-900 mt-1 font-medium">Made by Group 1</p>
         </footer>
     </div>
 

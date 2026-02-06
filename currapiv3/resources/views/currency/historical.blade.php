@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="bg-gradient-to-r from-violet-300 to-violet-400 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 mb-4 md:mb-6">
         <h2 class="text-2xl md:text-4xl font-bold text-white text-center mb-2">Historical Exchange Rates</h2>
-        <p class="text-sm md:text-base text-violet-50 text-center">View historical exchange rate data</p>
+        <p class="text-sm md:text-base text-violet-50 text-center"></p>
     </div>
 
     <!-- Form Section -->
