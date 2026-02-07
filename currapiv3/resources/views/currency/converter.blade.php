@@ -36,7 +36,7 @@
                        max="1000000"
                        class="w-full px-4 py-3 rounded-xl border border-violet-200 bg-white text-violet-900 placeholder:text-violet-400 shadow-sm focus:ring-2 focus:ring-violet-300 focus:border-violet-300 outline-none transition-all"
                        required>
-                <p class="mt-1 text-xs text-violet-500">Maximum amount: 1,000,000</p>
+                <p class="mt-1 text-xs text-violet-500"></p>
             </div>
 
             <!-- Currency Selection -->
