@@ -8,7 +8,7 @@
     <link rel="icon" type="image/jpeg" href="/logos/newcurrapilogo_nobg.png">
 
     <script src="https://cdn.tailwindcss.com" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
     <script>

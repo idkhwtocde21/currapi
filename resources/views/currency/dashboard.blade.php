@@ -5,6 +5,7 @@
 @section('content')
 <div class="max-w-6xl mx-auto">
     <div id="dashboardContent" class="animate-fadeInUp">
+
         <!-- Header -->
         <div class="bg-gradient-to-r from-violet-300 to-violet-400 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 mb-4 md:mb-6">
             <h2 class="text-2xl md:text-4xl font-bold text-white text-center mb-2">Currency Analytics Dashboard</h2>
@@ -15,9 +16,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-6 animate-fadeInUp animate-delay-100">
             @if(isset($rates['EUR']))
             <div class="bg-white backdrop-blur-sm rounded-xl shadow-lg p-6 border border-violet-200">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-sm font-medium text-violet-600">🇪🇺 USD/EUR</h3>
-                </div>
+                <h3 class="text-sm font-medium text-violet-600 mb-2">🇪🇺 USD/EUR</h3>
                 <p class="text-3xl font-bold text-violet-900">{{ number_format($rates['EUR'], 4) }}</p>
                 <p class="text-xs text-violet-500 mt-1">US Dollar to Euro</p>
             </div>
@@ -25,9 +24,7 @@
 
             @if(isset($rates['GBP']))
             <div class="bg-white backdrop-blur-sm rounded-xl shadow-lg p-6 border border-violet-200">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-sm font-medium text-violet-600">🇬🇧 USD/GBP</h3>
-                </div>
+                <h3 class="text-sm font-medium text-violet-600 mb-2">🇬🇧 USD/GBP</h3>
                 <p class="text-3xl font-bold text-violet-900">{{ number_format($rates['GBP'], 4) }}</p>
                 <p class="text-xs text-violet-500 mt-1">US Dollar to British Pound</p>
             </div>
@@ -35,9 +32,7 @@
 
             @if(isset($rates['JPY']))
             <div class="bg-white backdrop-blur-sm rounded-xl shadow-lg p-6 border border-violet-200">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-sm font-medium text-violet-600">🇯🇵 USD/JPY</h3>
-                </div>
+                <h3 class="text-sm font-medium text-violet-600 mb-2">🇯🇵 USD/JPY</h3>
                 <p class="text-3xl font-bold text-violet-900">{{ number_format($rates['JPY'], 2) }}</p>
                 <p class="text-xs text-violet-500 mt-1">US Dollar to Japanese Yen</p>
             </div>
@@ -45,9 +40,7 @@
 
             @if(isset($rates['PHP']))
             <div class="bg-white backdrop-blur-sm rounded-xl shadow-lg p-6 border border-violet-200">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-sm font-medium text-violet-600">🇵🇭 USD/PHP</h3>
-                </div>
+                <h3 class="text-sm font-medium text-violet-600 mb-2">🇵🇭 USD/PHP</h3>
                 <p class="text-3xl font-bold text-violet-900">{{ number_format($rates['PHP'], 2) }}</p>
                 <p class="text-xs text-violet-500 mt-1">US Dollar to Philippine Peso</p>
             </div>
@@ -82,9 +75,9 @@
 
                     @foreach($rates as $currency => $rate)
                     @php
-                        $today = now()->format('Y-m-d');
-                        $seed = abs(crc32($today . 'USD' . $currency));
-                        $drift = (($seed % 10000) / 10000 - 0.5) * 0.006;
+                        $today  = now()->format('Y-m-d');
+                        $seed   = abs(crc32($today . 'USD' . $currency));
+                        $drift  = (($seed % 10000) / 10000 - 0.5) * 0.006;
                         $change = round($drift * 100, 2);
                     @endphp
                     <div class="flex justify-between items-center py-2 border-b border-violet-50 last:border-0"
@@ -110,8 +103,9 @@
 
             <!-- Market Overview Chart -->
             <div class="bg-white backdrop-blur-sm rounded-xl shadow-lg p-6 border border-violet-100">
-                <h3 class="text-xl font-bold text-violet-900 mb-4">Market Overview</h3>
-                <canvas id="marketChart" style="max-height: 300px;"></canvas>
+                <h3 class="text-xl font-bold text-violet-900 mb-1">Market Overview</h3>
+                <p class="text-xs text-violet-400 mb-3">USD/PHP — Last 7 days</p>
+                <canvas id="marketChart" style="max-height: 260px;"></canvas>
             </div>
         </div>
 
@@ -175,41 +169,63 @@
 
 @push('scripts')
 <script>
-    // Market Overview Chart
-    const ctx = document.getElementById('marketChart').getContext('2d');
-    const marketChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode(array_map(fn($d) => \Carbon\Carbon::parse($d['date'])->format('M d'), $chart_data)) !!},
-            datasets: [{
-                label: 'USD/PHP (7 Days)',
-                data: {!! json_encode(array_column($chart_data, 'rate')) !!},
-                borderColor: 'rgb(147, 51, 234)',
-                backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: true, position: 'top' }
-            },
-            scales: {
-                y: { beginAtZero: false }
-            }
-        }
-    });
+    // ── Market Overview Chart — calls service directly, no variable dependency ──
+    @php
+        $phpRates = app(\App\Services\CurrencyService::class)->getHistoricalData('USD', 'PHP', 6);
+    @endphp
 
-    // Auto-refresh countdown
+    (function() {
+        const labels = {!! json_encode(array_map(fn($d) => \Carbon\Carbon::parse($d['date'])->format('M d'), $phpRates)) !!};
+        const values = {!! json_encode(array_column($phpRates, 'rate')) !!};
+        const ctx    = document.getElementById('marketChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'USD/PHP',
+                    data: values,
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(139, 92, 246, 0.08)' },
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    })();
+
+    // ── Auto-refresh countdown ──
     let secondsLeft = 60;
     const refreshBtn = document.getElementById('refreshBtn');
 
     function updateCountdown() {
         refreshBtn.textContent = `Refresh Dashboard (auto in ${secondsLeft}s)`;
     }
-
     updateCountdown();
 
     const countdownInterval = setInterval(() => {
@@ -221,7 +237,6 @@
         }
     }, 1000);
 
-    // Manual refresh
     refreshBtn.addEventListener('click', () => {
         secondsLeft = 60;
         updateCountdown();
@@ -231,11 +246,9 @@
     async function refreshRates() {
         refreshBtn.disabled = true;
         refreshBtn.textContent = 'Refreshing...';
-
         try {
             const response = await fetch('{{ route('currency.live-rates') }}');
             const data = await response.json();
-
             if (data && data.rates) {
                 updateRateRows(data.rates);
                 updateGainersLosers(data.gainers, data.losers);
@@ -256,21 +269,21 @@
             const row = document.querySelector(`[data-currency="${currency}"]`);
             if (!row || !rates[currency]) return;
 
-            const seed = simpleHash(today + 'USD' + currency);
-            const drift = ((seed % 10000) / 10000 - 0.5) * 0.006;
+            const seed   = simpleHash(today + 'USD' + currency);
+            const drift  = ((seed % 10000) / 10000 - 0.5) * 0.006;
             const change = (drift * 100).toFixed(2);
-            const isUp = parseFloat(change) >= 0;
+            const isUp   = parseFloat(change) >= 0;
 
             row.querySelector('.rate-value').textContent = parseFloat(rates[currency]).toFixed(4);
             const changeEl = row.querySelector('.rate-change');
             changeEl.textContent = `${isUp ? '+' : ''}${change}%`;
-            changeEl.className = `rate-change text-xs ${isUp ? 'text-green-600' : 'text-red-600'}`;
+            changeEl.className   = `rate-change text-xs ${isUp ? 'text-green-600' : 'text-red-600'}`;
         });
     }
 
     function updateGainersLosers(gainers, losers) {
         const gainersEl = document.getElementById('gainers-list');
-        const losersEl = document.getElementById('losers-list');
+        const losersEl  = document.getElementById('losers-list');
 
         if (gainersEl && gainers) {
             gainersEl.innerHTML = gainers.map(g => `
@@ -301,7 +314,6 @@
         }
     }
 
-    // Mirror of PHP seeded hash — must match CurrencyService::dailySeed logic
     function simpleHash(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {

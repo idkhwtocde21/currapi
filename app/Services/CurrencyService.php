@@ -270,7 +270,7 @@ class CurrencyService
      * Get dashboard data.
      * Gainers/losers use stable seeded % change — no rand().
      */
-    public function getDashboardData()
+public function getDashboardData()
     {
         $baseCurrency = 'USD';
         $rates        = $this->getExchangeRates($baseCurrency);
@@ -285,8 +285,7 @@ class CurrencyService
             'CAD' => $rates['CAD'] ?? 0,
         ];
 
-        $gainers = [];
-        $losers  = [];
+        $allEntries = [];
 
         foreach ($mainPairs as $currency => $rate) {
             if ($rate <= 0) continue;
@@ -295,19 +294,44 @@ class CurrencyService
             $drift  = $this->dailyDrift($seed);
             $change = round($drift * 100, 2);
 
-            $entry = [
+            $allEntries[] = [
                 'pair'   => "USD/{$currency}",
                 'rate'   => round($rate, 4),
                 'change' => $change,
             ];
+        }
 
-            if ($change >= 0) {
+        // Sort all entries by change descending
+        usort($allEntries, fn($a, $b) => $b['change'] <=> $a['change']);
+
+        // Always guarantee gainers and losers
+        // If everything is positive, bottom 2 become losers
+        // If everything is negative, top 2 become gainers
+        $total   = count($allEntries);
+        $gainers = [];
+        $losers  = [];
+
+        foreach ($allEntries as $entry) {
+            if ($entry['change'] >= 0) {
                 $gainers[] = $entry;
             } else {
                 $losers[] = $entry;
             }
         }
 
+        // Guarantee at least 1 loser — move bottom from gainers
+        if (empty($losers) && count($gainers) >= 2) {
+            $losers[]  = array_pop($gainers);
+            $losers[]  = array_pop($gainers);
+        }
+
+        // Guarantee at least 1 gainer — move top from losers
+        if (empty($gainers) && count($losers) >= 2) {
+            $gainers[] = array_shift($losers);
+            $gainers[] = array_shift($losers);
+        }
+
+        // Re-sort after redistribution
         usort($gainers, fn($a, $b) => $b['change'] <=> $a['change']);
         usort($losers,  fn($a, $b) => $a['change'] <=> $b['change']);
 
@@ -316,7 +340,7 @@ class CurrencyService
         return [
             'rates'      => $mainPairs,
             'gainers'    => array_slice($gainers, 0, 3),
-            'losers'     => array_slice($losers, 0, 3),
+            'losers'     => array_slice($losers,  0, 3),
             'chart_data' => $chartData,
         ];
     }
